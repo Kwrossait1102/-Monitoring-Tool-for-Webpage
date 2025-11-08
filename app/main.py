@@ -3,7 +3,7 @@ import requests, time
 
 app = FastAPI()
 
-TARGET_URL = "https://www.sap.com/germany/index.html"
+TARGET_URL = "https://www.uni-stuttgart.de/"
 
 @app.get("/")
 def check_availability():
