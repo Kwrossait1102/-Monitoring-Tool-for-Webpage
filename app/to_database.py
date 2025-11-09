@@ -57,6 +57,9 @@ def add_record(
             status_code=status_code,
             ok=ok,
             latency_ms=latency_ms,
+            ttfb_ms=ttfb_ms,                       
+            response_size_bytes=response_size_bytes,  
+            consecutive_failures=consecutive_failures or 0,
             error=error or None,
         )
         session.add(rec)

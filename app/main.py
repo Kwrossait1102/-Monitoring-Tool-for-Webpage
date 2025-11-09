@@ -2,6 +2,7 @@ from fastapi import FastAPI, Query
 import requests
 import time
 import os
+import threading
 from threading import Lock
 from datetime import datetime, timezone
 from contextlib import asynccontextmanager
@@ -16,9 +17,10 @@ from .to_database import init_db, add_record, get_last_records
 async def lifespan(app: FastAPI):
     # Initialize the database when the application starts
     init_db()
+    thread = threading.Thread(target=background_checker, daemon=True)
+    thread.start()
     # Yield control to allow the app to run
     yield
-    # (Optional) Perform cleanup tasks when the app shuts down
 
 
 # Create FastAPI application instance with lifespan handler
@@ -31,6 +33,9 @@ app = FastAPI(lifespan=lifespan)
 # Target URL is read from environment variable (default provided)
 TARGET_URL = os.getenv("TARGET_URL", "https://example.com")
 
+# Update automatically every 60s
+CHECK_INTERVAL = 60
+
 # Thread-safe counters for availability statistics
 _stats_lock = Lock()
 _total_checks = 0
@@ -42,7 +47,7 @@ _consecutive_failures = 0
 # ------------------------------------------------------------
 def _record(ok: bool):
     """Update internal counters for total and successful checks."""
-    global _total_checks, _ok_checks
+    global _total_checks, _ok_checks, _consecutive_failures
     with _stats_lock:
         _total_checks += 1
         if ok:
@@ -58,6 +63,12 @@ def _availability_pct():
         if _total_checks == 0:
             return None
         return round(_ok_checks / _total_checks * 100, 2)
+
+def background_checker():
+    """Check automatically in background"""
+    while True:
+        check_availability()
+        time.sleep(CHECK_INTERVAL)
 
 
 # ------------------------------------------------------------
@@ -85,7 +96,16 @@ def check_availability():
         ok = bool(r.ok)
 
         _record(ok)
-        add_record(ts, TARGET_URL, r.status_code, ok, latency, "")
+        add_record(ts=ts,
+                   url=TARGET_URL,
+                   status_code=r.status_code,
+                   ok=ok,
+                   latency_ms=latency,
+                   error="",
+                   ttfb_ms=ttfb_ms,
+                   response_size_bytes=response_size_bytes,
+                   consecutive_failures=_consecutive_failures,
+                   )
 
         return {
             "url": TARGET_URL,
@@ -108,6 +128,8 @@ def check_availability():
             "available": False,
             "error": str(e),
             "latency_ms": latency,
+            "ttfb_ms":None,
+            "response_size_bytes":None,
             "consecutive_failures": _consecutive_failures,
             "availability_pct_since_start": _availability_pct(),
         }
@@ -115,7 +137,6 @@ def check_availability():
 
 @app.get("/records")
 def records(limit: int = Query(100, ge=1, le=1000)):
-    """Return recent availability check records from the database."""
     items = get_last_records(limit)
     return {"count": len(items), "items": items}
 
