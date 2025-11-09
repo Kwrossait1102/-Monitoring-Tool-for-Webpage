@@ -62,6 +62,15 @@ python -m uvicorn app.main:app --reload --port 8000
 - Store results in the database
 - Provide access to monitoring data through several endpoints
 
+## Running Test
+
+A simple pytest is provided to check that the root API endpoint ("/") responds correctly:
+
+```bash
+# Run the test in the **root directory of the project**
+pytest -q
+```
+
 ## Example Output
 
 **GET /**  

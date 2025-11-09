@@ -11,7 +11,7 @@ from unittest.mock import patch, MagicMock
 from app.main import app  # Import the FastAPI app from the package
 
 from app.to_database import init_db
-init_db()  # 显式建表一次
+init_db()
 
 client = TestClient(app)
 
