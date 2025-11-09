@@ -4,11 +4,11 @@ import os
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 
-from sqlalchemy import create_engine, Integer, Float, String, Boolean, DateTime
+from sqlalchemy import create_engine, Integer, Float, String, Boolean, DateTime, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker
 
 # 1) Engine & Session
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+psycopg2://postgres:postgres@localhost:5432/monitor")
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+psycopg://postgres:postgres@localhost:5432/monitor")
 engine = create_engine(DATABASE_URL, echo=False, pool_pre_ping=True)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 
@@ -27,6 +27,9 @@ class CheckRecord(Base):
     ok: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, index=True)
     latency_ms: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     error: Mapped[Optional[str]] = mapped_column(String(2048), nullable=True)
+
+    # prevent duplicate (url, ts)
+    __table_args__ = (UniqueConstraint("url", "ts", name="uq_url_ts"),)
 
 # 4) Create tables
 def init_db() -> None:

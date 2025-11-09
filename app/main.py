@@ -5,11 +5,9 @@ import os
 from threading import Lock
 from datetime import datetime, timezone
 from contextlib import asynccontextmanager
-from to_database import init_db, add_record, get_last_records
 from dotenv import load_dotenv
-
-# Load environment variables from .env file
-load_dotenv()
+load_dotenv(".env") # load enviroment variable from .env file
+from .to_database import init_db, add_record, get_last_records
 
 # ------------------------------------------------------------
 # Lifespan context: initialization and shutdown procedures
