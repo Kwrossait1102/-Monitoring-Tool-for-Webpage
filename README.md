@@ -50,10 +50,11 @@ DEBUG=True
 
 ## Running this application
 
-Start the FastAPI server with uvicorn:
+Start the FastAPI server with uvicorn (Please run this command in the **root directory of the project**):
 
 ```bash
-python -m uvicorn main:app --reload
+# Run the application locally on port 8000
+python -m uvicorn app.main:app --reload --port 8000
 ```
 
 - After startup, the application will automatically:
