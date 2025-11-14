@@ -53,50 +53,122 @@ DEBUG=True
 
 Before running the application, ensure PostgreSQL is properly set up:
 
-#### 4.1 Start PostgreSQL Service
+#### 4.1 Find your PostgreSQL service name
 
-On Windows:
+**On Windows:**
 
 ```bash
+# List all PostgreSQL services
+sc query state= all | findstr postgresql
+```
+
+Common service names: `postgresql-x64-15`, `postgresql-x64-16`, `PostgreSQL`
+
+**On Linux:**
+
+```bash
+# Check if PostgreSQL service exists and its status
+systemctl list-units --type=service | grep postgres
+
+# Or check specific version
+systemctl status postgresql
+systemctl status postgresql@15-main  # Ubuntu/Debian with version 15
+systemctl status postgresql-15       # Red Hat/CentOS with version 15
+```
+
+Common service names: `postgresql`, `postgresql@15-main`, `postgresql-15`
+
+**On Mac:**
+
+```bash
+# If installed via Homebrew
+brew services list | grep postgresql
+
 # Check if PostgreSQL is running
+ps aux | grep postgres
+```
+
+Common service names: `postgresql`, `postgresql@15`, `postgresql@16`
+
+#### 4.2 Start PostgreSQL Service
+
+**On Windows:**
+
+```bash
+# Check if PostgreSQL is running (replace with your service name from step 4.1)
 sc query postgresql-x64-15
 
-# Start PostgreSQL service (adjust version number if needed)
+# Start PostgreSQL service if not running
 net start postgresql-x64-15
 ```
 
-On Linux/ Mac:
+**On Linux:**
 
 ```bash
 # Start PostgreSQL service
 sudo systemctl start postgresql
 
-# Or on Mac with Homebrew:
+# Verify it's running
+sudo systemctl status postgresql
+```
+
+**On Mac with Homebrew:**
+
+```bash
+# Start PostgreSQL service
+brew services start postgresql@15
+
+# Or for the default version
 brew services start postgresql
 ```
 
-#### 4.2 Create Database
+#### 4.3 Create Database
 
 Connect to PostgreSQL and create the required database:
+
+**Step 1: Connect to PostgreSQL**
 
 ```bash
 # Connect to PostgreSQL (default user is 'postgres')
 psql -U postgres -h localhost
 
-# In the PostgreSQL prompt, create the database
+# If prompted for password, enter the password you set during PostgreSQL installation
+```
+
+**Note:**
+
+- On Linux/Mac, you might need to use: `sudo -u postgres psql`
+- If you encounter "password authentication failed", you may need to reset your PostgreSQL password
+
+**Step 2: Create the database**
+
+```sql
+-- In the PostgreSQL prompt, create the database
 CREATE DATABASE monitor;
 
-# Exit
+-- Verify the database was created
+\l
+
+-- Exit
 \q
 ```
 
-#### 4.3 Verify Connection
+#### 4.4 Verify Connection
 
-Test the database connection using the credentials from your **.env** file:
+Test the database connection using the credentials from your `.env` file:
 
 ```bash
+# Test connection to the monitor database
 psql -U postgres -h localhost -d monitor
+
+# If successful, you should see the PostgreSQL prompt
+# Exit with \q
 ```
+
+**If you encounter authentication errors:**
+
+- Make sure the password in your `.env` file matches your PostgreSQL user password
+- On Linux/Mac, try: `sudo -u postgres psql -d monitor`
 
 ## Running this application
 
