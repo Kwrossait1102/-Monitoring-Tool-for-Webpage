@@ -26,7 +26,8 @@ cd your-repo-name
 
 ### 2. Install dependencies
 
-Before installing dependencies, you should have already installed **Python 3.10+** and **PostgreSQL** on your device.  
+Before installing dependencies, you should have already installed **Python 3.10+** and **PostgreSQL** on your device. **Make sure PostgreSQL service is running before starting the application.**
+
 To install all required packages, run the following command in the **root directory of the project**:
 
 ```bash
@@ -46,6 +47,55 @@ DATABASE_URL=postgresql+psycopg://postgres:password@localhost:5432/monitor
 
 # Optional debug flag
 DEBUG=True
+```
+
+### 4. Set Up PostgreSQL Database
+
+Before running the application, ensure PostgreSQL is properly set up:
+
+#### 4.1 Start PostgreSQL Service
+
+On Windows:
+
+```bash
+# Check if PostgreSQL is running
+sc query postgresql-x64-15
+
+# Start PostgreSQL service (adjust version number if needed)
+net start postgresql-x64-15
+```
+
+On Linux/ Mac:
+
+```bash
+# Start PostgreSQL service
+sudo systemctl start postgresql
+
+# Or on Mac with Homebrew:
+brew services start postgresql
+```
+
+#### 4.2 Create Database
+
+Connect to PostgreSQL and create the required database:
+
+```bash
+# Connect to PostgreSQL (default user is 'postgres')
+psql -U postgres -h localhost
+
+# In the PostgreSQL prompt, create the database
+CREATE DATABASE monitor;
+
+# Exit
+\q
+```
+
+#### 4.3 Verify Connection
+
+Test the database connection using the credentials from your **.env** file:
+
+```bash
+psql -U postgres -h localhost -d monitor
 ```
 
 ## Running this application
